@@ -1,0 +1,8 @@
+PyYAML==3.11
+oauthlib==0.7.2
+pdfminer==20140328
+python-twitter==2.0
+requests==2.5.0
+requests-oauthlib==0.4.2
+simplejson==3.6.5
+wsgiref==0.1.2
