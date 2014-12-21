@@ -1,0 +1,9 @@
+bin/
+lib/
+include/
+.DS_Store
+*.pyc
+.Python
+*.pdf
+*.yaml
+
