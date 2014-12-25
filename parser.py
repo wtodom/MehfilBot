@@ -9,14 +9,22 @@ import calendar
 from collections import OrderedDict
 import datetime
 import re
+import shutil
 import subprocess
 
 
 config = yaml.load(file('mehfilbot.yaml', 'r'))
-api = twitter.Api(consumer_key=config['twitter']['api_key'],
-                      consumer_secret=config['twitter']['api_secret'],
-                      access_token_key=config['twitter']['access_token'],
-                      access_token_secret=config['twitter']['access_token_secret'])
+api = twitter.Api(
+    consumer_key=config['twitter']['api_key'],
+    consumer_secret=config['twitter']['api_secret'],
+    access_token_key=config['twitter']['access_token'],
+    access_token_secret=config['twitter']['access_token_secret']
+    )
+
+def get_new_pdf():
+    response = requests.get(config['menu']['url'], stream=True)
+    with open(config['menu']['filename'], 'w') as pdf:
+        shutil.copyfileobj(response.raw, pdf)
 
 def get_text(pdf_filename):
     return subprocess.check_output(['pdf2txt.py', pdf_filename])
@@ -88,6 +96,8 @@ def is_todays_menu(menu):
     day = int(date_parts[2])
     today = datetime.date.today()
     menu_date = datetime.date(year, month, day)
+    print('menu_date: ' + str(menu_date))
+    print('today: ' + str(today))
     return menu_date == today
 
 def log_menu(menu):
@@ -100,10 +110,10 @@ def log_menu(menu):
         cur.execute(
             "INSERT INTO menu_item (menu_id, item_number, name, description, price)\
              VALUES ({0}, {1}, '{2}', '{3}', {4});".format(
-                menu_id, 
-                i, 
-                menu[str(i)]['name'], 
-                menu[str(i)]['description'], 
+                menu_id,
+                i,
+                menu[str(i)]['name'],
+                menu[str(i)]['description'],
                 menu[str(i)]['price']
                 )
             )
@@ -112,19 +122,19 @@ def log_menu(menu):
     conn.close
 
 def tweet_menu(menu):
-    # tweet he summary, then the individual items
+    # tweet the summary, then the individual items
     menu_items = []
     summary = "Today's Mehfil menu:\n"
     for item in menu.items()[1:]:
         summary += "{0}: {1}\n".format(
-            item[0], 
+            item[0],
             item[1]['name']
             )
         menu_items.append(
             "{0}: {1} - {2} (${3})".format(
-                item[0], 
-                item[1]['name'], 
-                item[1]['description'], 
+                item[0],
+                item[1]['name'],
+                item[1]['description'],
                 item[1]['price']
                 )
             )
@@ -135,10 +145,10 @@ def tweet_menu(menu):
         reply_id = reply.id
 
 def main():
+    get_new_pdf()
     menu = get_menu(get_text(config['menu']['filename']))
     if is_new(menu):
-        # print(menu)
-        # log_menu(menu)
+        log_menu(menu)
         if is_todays_menu(menu):
             tweet_menu(menu)
 
