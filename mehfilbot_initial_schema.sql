@@ -1,6 +1,7 @@
 CREATE TABLE menu (
   menu_id SERIAL PRIMARY KEY,
   date VARCHAR(40) NOT NULL,
+  has_been_tweeted SMALLINT NOT NULL,
   created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
