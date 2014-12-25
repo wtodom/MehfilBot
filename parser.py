@@ -44,7 +44,7 @@ def is_description_start(word):
 def is_description_end(word):
     return word[-1] == ')'
 
-def get_menu(pdf_text):
+def parse_menu(pdf_text):
     menu = OrderedDict()
     words = pdf_text.split()
     menu['date'] = ' '.join(words[7:12]).title()
@@ -89,16 +89,14 @@ def is_new(menu):
     conn.close()
     return len(res) == 0
 
-def is_todays_menu(menu):
-    date_parts = menu['date'].split()
-    year = int(date_parts[4])
-    month = list(calendar.month_abbr).index(date_parts[1])
-    day = int(date_parts[2])
-    today = datetime.date.today()
-    menu_date = datetime.date(year, month, day)
-    print('menu_date: ' + str(menu_date))
-    print('today: ' + str(today))
-    return menu_date == today
+def today_not_tweeted(today):
+    conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
+    cur = conn.cursor()
+    cur.execute("SELECT 1 FROM menu WHERE date='{0}' and has_been_tweeted=0;".format(today))
+    res = cur.fetchall()
+    cur.close()
+    conn.close()
+    return len(res) == 1
 
 def log_menu(menu):
     conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
@@ -122,7 +120,6 @@ def log_menu(menu):
     conn.close
 
 def tweet_menu(menu):
-    # tweet the summary, then the individual items
     menu_items = []
     summary = "Today's Mehfil menu:\n"
     for item in menu.items()[1:]:
@@ -144,13 +141,23 @@ def tweet_menu(menu):
         reply = api.PostUpdate(item, in_reply_to_status_id=reply_id)
         reply_id = reply.id
 
+def set_menu_as_tweeted():
+    conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
+    cur = conn.cursor()
+    cur.execute("UPDATE menu SET has_been_tweeted=1 WHERE date='{0}' and has_been_tweeted=0;".format(today))
+    res = cur.fetchall()
+    cur.close()
+    conn.close()
+
 def main():
     get_new_pdf()
-    menu = get_menu(get_text(config['menu']['filename']))
+    menu = parse_menu(get_text(config['menu']['filename']))
+    today = datetime.date.today()
     if is_new(menu):
         log_menu(menu)
-        if is_todays_menu(menu):
+        if today_not_tweeted(today):
             tweet_menu(menu)
+            set_menu_as_tweeted(today)
 
 if __name__ == '__main__':
     main()
