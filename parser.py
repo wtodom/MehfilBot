@@ -155,9 +155,9 @@ def main():
     today = datetime.date.today()
     if is_new(menu):
         log_menu(menu)
-        if today_not_tweeted(today):
-            tweet_menu(menu)
-            set_menu_as_tweeted(today)
+    if today_not_tweeted(today):
+        tweet_menu(menu)
+        set_menu_as_tweeted(today)
 
 if __name__ == '__main__':
     main()
