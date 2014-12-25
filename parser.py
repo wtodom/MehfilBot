@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import psycopg2
+import dateutil.parser as dateutil
 import requests
 import twitter
 import yaml
@@ -47,7 +48,8 @@ def is_description_end(word):
 def parse_menu(pdf_text):
     menu = OrderedDict()
     words = pdf_text.split()
-    menu['date'] = ' '.join(words[7:12]).title()
+    menu_date = ' '.join(words[7:12]).title()
+    menu['date'] = str(dateutil.parse(menu_date).date())
     read_item = False
     read_description = False
     item_number = -1
@@ -83,7 +85,7 @@ def parse_menu(pdf_text):
 def is_new(menu):
     conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
     cur = conn.cursor()
-    cur.execute("SELECT menu_id FROM menu WHERE date='{0}';".format(menu['date']))
+    cur.execute("SELECT menu_id FROM menu WHERE menu_date='{0}';".format(menu['date']))
     res = cur.fetchall()
     cur.close()
     conn.close()
@@ -92,7 +94,7 @@ def is_new(menu):
 def today_not_tweeted(today):
     conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
     cur = conn.cursor()
-    cur.execute("SELECT 1 FROM menu WHERE date='{0}' and has_been_tweeted=0;".format(today))
+    cur.execute("SELECT 1 FROM menu WHERE menu_date='{0}' and has_been_tweeted=0;".format(today))
     res = cur.fetchall()
     cur.close()
     conn.close()
@@ -101,8 +103,8 @@ def today_not_tweeted(today):
 def log_menu(menu):
     conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
     cur = conn.cursor()
-    cur.execute("INSERT INTO menu (date) VALUES ('{0}');".format(menu['date']))
-    cur.execute("SELECT menu_id FROM menu WHERE date='{0}';".format(menu['date']))
+    cur.execute("INSERT INTO menu (menu_date) VALUES ('{0}');".format(menu['date']))
+    cur.execute("SELECT menu_id FROM menu WHERE menu_date='{0}';".format(menu['date']))
     menu_id = cur.fetchone()[0]
     for i in range(1, 6):
         cur.execute(
@@ -144,8 +146,8 @@ def tweet_menu(menu):
 def set_menu_as_tweeted():
     conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
     cur = conn.cursor()
-    cur.execute("UPDATE menu SET has_been_tweeted=1 WHERE date='{0}' and has_been_tweeted=0;".format(today))
-    res = cur.fetchall()
+    cur.execute("UPDATE menu SET has_been_tweeted=1 WHERE menu_date='{0}' and has_been_tweeted=0;".format(today))
+    conn.commit()
     cur.close()
     conn.close()
 
