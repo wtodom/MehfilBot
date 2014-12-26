@@ -13,3 +13,5 @@ CREATE TABLE menu_item (
   description VARCHAR(200) NOT NULL,
   price NUMERIC(4,2) NOT NULL
 );
+
+ALTER TABLE menu ADD CONSTRAINT menu_date_UNIQUE UNIQUE (menu_date);
