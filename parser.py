@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import mehfildb
+
 import psycopg2
 import dateutil.parser as dateutil
 import requests
@@ -83,43 +85,22 @@ def parse_menu(pdf_text):
     return menu
 
 def is_new(menu):
-    conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
-    cur = conn.cursor()
-    cur.execute("SELECT menu_id FROM menu WHERE menu_date='{0}';".format(menu['date']))
-    res = cur.fetchall()
-    cur.close()
-    conn.close()
+    res = mehfildb.get_menu_for_date(menu['date'])
     return len(res) == 0
-
-def today_not_tweeted(today):
-    conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
-    cur = conn.cursor()
-    cur.execute("SELECT 1 FROM menu WHERE menu_date='{0}' and has_been_tweeted=0;".format(today))
-    res = cur.fetchall()
-    cur.close()
-    conn.close()
-    return len(res) == 1
 
 def log_menu(menu):
     conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
     cur = conn.cursor()
-    cur.execute("INSERT INTO menu (menu_date) VALUES ('{0}');".format(menu['date']))
-    cur.execute("SELECT menu_id FROM menu WHERE menu_date='{0}';".format(menu['date']))
-    menu_id = cur.fetchone()[0]
+    mehfildb.new_menu(menu['date'])
+    menu_id = mehfildb.get_menu_for_date(menu['date'])[0]
     for i in range(1, 6):
-        cur.execute(
-            "INSERT INTO menu_item (menu_id, item_number, name, description, price)\
-             VALUES ({0}, {1}, '{2}', '{3}', {4});".format(
-                menu_id,
-                i,
-                menu[str(i)]['name'],
-                menu[str(i)]['description'],
-                menu[str(i)]['price']
-                )
+        mehfildb.new_menu_item(
+            menu_id,
+            i,
+            menu[str(i)]['name'],
+            menu[str(i)]['description'],
+            menu[str(i)]['price']
             )
-    conn.commit()
-    cur.close()
-    conn.close
 
 def tweet_menu(menu):
     menu_items = []
@@ -143,23 +124,16 @@ def tweet_menu(menu):
         reply = api.PostUpdate(item, in_reply_to_status_id=reply_id)
         reply_id = reply.id
 
-def set_menu_as_tweeted():
-    conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
-    cur = conn.cursor()
-    cur.execute("UPDATE menu SET has_been_tweeted=1 WHERE menu_date='{0}' and has_been_tweeted=0;".format(today))
-    conn.commit()
-    cur.close()
-    conn.close()
-
 def main():
     get_new_pdf()
     menu = parse_menu(get_text(config['menu']['filename']))
     today = datetime.date.today()
     if is_new(menu):
         log_menu(menu)
-    if today_not_tweeted(today):
+    ## TODO: refactor this - leads to duplicate calls to the db
+    if mehfildb.menu_exists(today) and not mehfildb.menu_already_tweeted(today):
         tweet_menu(menu)
-        set_menu_as_tweeted(today)
+        meehfildb.set_menu_as_tweeted(today)
 
 if __name__ == '__main__':
     main()
