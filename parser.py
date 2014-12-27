@@ -1,11 +1,11 @@
 from __future__ import print_function
 
 import mehfildb
+import tweeter
 
 import psycopg2
 import dateutil.parser as dateutil
 import requests
-import twitter
 import yaml
 
 from collections import OrderedDict
@@ -14,19 +14,6 @@ import re
 import shutil
 import subprocess
 
-
-config = yaml.load(file('mehfilbot.yaml', 'r'))
-api = twitter.Api(
-    consumer_key=config['twitter']['api_key'],
-    consumer_secret=config['twitter']['api_secret'],
-    access_token_key=config['twitter']['access_token'],
-    access_token_secret=config['twitter']['access_token_secret']
-    )
-
-def get_new_pdf():
-    response = requests.get(config['menu']['url'], stream=True)
-    with open(config['menu']['filename'], 'w') as pdf:
-        shutil.copyfileobj(response.raw, pdf)
 
 def get_text(pdf_filename):
     return subprocess.check_output(['pdf2txt.py', pdf_filename])
@@ -82,57 +69,3 @@ def parse_menu(pdf_text):
         elif len(menu.keys()) == 6:  # TODO: this is a bad way to check
             break
     return menu
-
-def is_new(menu):
-    res = mehfildb.get_menu_for_date(menu['date'])
-    return res is not None
-
-def log_menu(menu):
-    conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
-    cur = conn.cursor()
-    mehfildb.new_menu(menu['date'])
-    menu_id = mehfildb.get_menu_for_date(menu['date'])[0]
-    for i in range(1, 6):
-        mehfildb.new_menu_item(
-            menu_id,
-            i,
-            menu[str(i)]['name'],
-            menu[str(i)]['description'],
-            menu[str(i)]['price']
-            )
-
-def tweet_menu(menu):
-    menu_items = []
-    summary = "Today's Mehfil menu:\n"
-    for item in menu.items()[1:]:
-        summary += "{0}: {1}\n".format(
-            item[0],
-            item[1]['name']
-            )
-        menu_items.append(
-            "{0}: {1} - {2} (${3})".format(
-                item[0],
-                item[1]['name'],
-                item[1]['description'],
-                item[1]['price']
-                )
-            )
-    summary_tweet = api.PostUpdate(summary)
-    reply_id = summary_tweet.id
-    for item in menu_items:
-        reply = api.PostUpdate(item, in_reply_to_status_id=reply_id)
-        reply_id = reply.id
-
-def main():
-    get_new_pdf()
-    menu = parse_menu(get_text(config['menu']['filename']))
-    today = datetime.date.today()
-    if is_new(menu):
-        log_menu(menu)
-    ## TODO: refactor this - leads to duplicate calls to the db
-    if mehfildb.menu_exists(today) and not mehfildb.menu_already_tweeted(today):
-        tweet_menu(menu)
-        meehfildb.set_menu_as_tweeted(today)
-
-if __name__ == '__main__':
-    main()

@@ -67,7 +67,7 @@ def get_menu_for_date(date):
     conn.close()
     return res
 
-def menu_already_tweeted(date):
+def menu_is_tweeted(date):
     ## TODO: raise exception if menu not found?
     res = get_menu_for_date(date)
     if res and res[2] == 1:
