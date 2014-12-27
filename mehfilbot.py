@@ -4,6 +4,7 @@ import tweeter
 
 import requests
 import shutil
+import yaml
 
 import datetime
 
@@ -17,7 +18,7 @@ def get_new_pdf():
 
 def is_new(menu):
     res = mehfildb.get_menu_for_date(menu['date'])
-    return res is not None
+    return res is None
 
 def log_menu(menu):
     mehfildb.new_menu(menu['date'])

@@ -1,4 +1,5 @@
 import twitter
+import yaml
 
 
 config = yaml.load(file('mehfilbot.yaml', 'r'))

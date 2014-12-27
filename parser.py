@@ -27,7 +27,7 @@ def is_description_end(word):
 def parse_menu(pdf_text):
     menu = OrderedDict()
     words = pdf_text.split()
-    menu_date = ' '.join(words[7:12]).title()
+    menu_date = ' '.join(words[5:8]).title()
     menu['date'] = str(dateutil.parse(menu_date).date())
     read_item = False
     read_description = False
