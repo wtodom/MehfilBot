@@ -8,7 +8,6 @@ import requests
 import twitter
 import yaml
 
-import calendar
 from collections import OrderedDict
 import datetime
 import re
@@ -86,7 +85,7 @@ def parse_menu(pdf_text):
 
 def is_new(menu):
     res = mehfildb.get_menu_for_date(menu['date'])
-    return len(res) == 0
+    return res is not None
 
 def log_menu(menu):
     conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
