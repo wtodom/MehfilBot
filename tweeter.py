@@ -1,6 +1,8 @@
 import twitter
 
 
+config = yaml.load(file('mehfilbot.yaml', 'r'))
+
 api = twitter.Api(
     consumer_key=config['twitter']['api_key'],
     consumer_secret=config['twitter']['api_secret'],

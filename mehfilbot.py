@@ -2,6 +2,11 @@ import mehfildb
 import parser
 import tweeter
 
+import requests
+import shutil
+
+import datetime
+
 
 config = yaml.load(file('mehfilbot.yaml', 'r'))
 
@@ -15,8 +20,6 @@ def is_new(menu):
     return res is not None
 
 def log_menu(menu):
-    conn = psycopg2.connect(dbname='mehfilbot', user='westonodom')
-    cur = conn.cursor()
     mehfildb.new_menu(menu['date'])
     menu_id = mehfildb.get_menu_for_date(menu['date'])[0]
     for i in range(1, 6):
@@ -30,7 +33,7 @@ def log_menu(menu):
 
 def main():
     get_new_pdf()
-    menu = parser.parse_menu(get_text(config['menu']['filename']))
+    menu = parser.parse_menu(parser.get_text(config['menu']['filename']))
     today = datetime.date.today()
     if is_new(menu):
         log_menu(menu)

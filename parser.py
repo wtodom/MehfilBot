@@ -1,17 +1,8 @@
-from __future__ import print_function
-
-import mehfildb
-import tweeter
-
-import psycopg2
 import dateutil.parser as dateutil
-import requests
 import yaml
 
 from collections import OrderedDict
-import datetime
 import re
-import shutil
 import subprocess
 
 
