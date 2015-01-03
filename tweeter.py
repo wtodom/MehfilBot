@@ -11,6 +11,7 @@ api = twitter.Api(
     access_token_secret=config['twitter']['access_token_secret']
     )
 
+
 def tweet_menu(menu):
     menu_items = []
     summary = "Today's Mehfil menu:\n"

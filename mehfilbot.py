@@ -11,14 +11,17 @@ import datetime
 
 config = yaml.load(file('mehfilbot.yaml', 'r'))
 
+
 def get_new_pdf():
     response = requests.get(config['menu']['url'], stream=True)
     with open(config['menu']['filename'], 'w') as pdf:
         shutil.copyfileobj(response.raw, pdf)
 
+
 def is_new(menu):
     res = mehfildb.get_menu_for_date(menu['date'])
     return res is None
+
 
 def log_menu(menu):
     mehfildb.new_menu(menu['date'])
@@ -32,13 +35,14 @@ def log_menu(menu):
             menu[str(i)]['price']
             )
 
+
 def main():
     get_new_pdf()
     menu = parser.parse_menu(parser.get_text(config['menu']['filename']))
     today = datetime.date.today()
     if is_new(menu):
         log_menu(menu)
-    ## TODO: refactor this - leads to duplicate calls to the db
+    # TODO: refactor this - leads to duplicate calls to the db
     if mehfildb.menu_exists(today) and not mehfildb.menu_is_tweeted(today):
         tweeter.tweet_menu(menu)
         mehfildb.set_menu_as_tweeted(today)

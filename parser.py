@@ -1,5 +1,4 @@
 import dateutil.parser as dateutil
-import yaml
 
 from collections import OrderedDict
 import re
@@ -9,34 +8,43 @@ import subprocess
 def get_text(pdf_filename):
     return subprocess.check_output(['pdf2txt.py', pdf_filename])
 
+
 def is_item_name(word):
     return word == word.upper() and '(' not in word
+
 
 def is_item_number(word):
     return re.match('\([0-9]\)', word)
 
+
 def is_price(word):
     return re.match('\$[0-9]\.[0-9][0-9]', word)
+
 
 def is_description_start(word):
     return word.strip()[0] == '('
 
+
 def is_description_end(word):
     return word[-1] == ')'
+
 
 def index_of_year(text_list):
     year = re.findall('[0-9]{4}', ' '.join(text_list))[0]
     return text_list.index(year)
 
+
 def index_of_month(text_list, year_index):
     month = re.findall('[A-Z]{3}', ' '.join(text_list[:year_index]))[-1]
     return text_list.index(month)
+
 
 def get_date(text_list):
     year_index = index_of_year(text_list)
     month_index = index_of_month(text_list, year_index)
     menu_date = ' '.join(text_list[month_index:year_index + 1]).title()
     return str(dateutil.parse(menu_date).date())
+
 
 def parse_menu(pdf_text):
     menu = OrderedDict()
@@ -62,7 +70,8 @@ def parse_menu(pdf_text):
             item = menu_item.strip()
             menu[item_number] = {}
             menu[item_number]['name'] = item
-            menu[item_number]['description'] = ''.join(c for c in description if c not in '()')
+            menu[item_number]['description'] = ''.join(
+                c for c in description if c not in '()')
             menu[item_number]['price'] = word[1:]
             menu_item = ''
             description = ''
