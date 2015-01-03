@@ -6,4 +6,5 @@ include/
 .Python
 *.pdf
 *.yaml
-
+*.sublime-project
+*.sublime-workspace
