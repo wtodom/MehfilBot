@@ -24,11 +24,24 @@ def is_description_start(word):
 def is_description_end(word):
     return word[-1] == ')'
 
+def index_of_year(text_list):
+    year = re.findall('[0-9]{4}', ' '.join(text_list))[0]
+    return text_list.index(year)
+
+def index_of_month(text_list, year_index):
+    month = re.findall('[A-Z]{3}', ' '.join(text_list[:year_index]))[-1]
+    return text_list.index(month)
+
+def get_date(text_list):
+    year_index = index_of_year(text_list)
+    month_index = index_of_month(text_list, year_index)
+    menu_date = ' '.join(text_list[month_index:year_index + 1]).title()
+    return str(dateutil.parse(menu_date).date())
+
 def parse_menu(pdf_text):
     menu = OrderedDict()
     words = pdf_text.split()
-    menu_date = ' '.join(words[5:8]).title()
-    menu['date'] = str(dateutil.parse(menu_date).date())
+    menu['date'] = get_date(words)
     read_item = False
     read_description = False
     item_number = -1
