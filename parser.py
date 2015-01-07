@@ -31,12 +31,20 @@ def is_description_end(word):
 
 def index_of_year(text_list):
     year = re.findall('[0-9]{4}', ' '.join(text_list))[0]
-    return text_list.index(year)
+    for i, item in enumerate(text_list):
+        print(year in item)
+        if year in item:
+            return i
+    # return text_list.index(year)
 
 
 def index_of_month(text_list, year_index):
     month = re.findall('[A-Z]{3}', ' '.join(text_list[:year_index]))[-1]
-    return text_list.index(month)
+    for i, item in enumerate(text_list):
+        print(month in item)
+        if month in item:
+            return i
+    # return text_list.index(month)
 
 
 def get_date(text_list):
