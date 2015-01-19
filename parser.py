@@ -49,7 +49,6 @@ def get_date(text_list):
     while not date_found:
         date_string = ' '.join(text_list[backtrack:year_index + 1]).title()
         try:
-            print('try: ', dateutil.parse(date_string))
             potential_date = dateutil.parse(date_string).date()
         except ValueError:
             # raised in some situations when it fails to parse a valid date
@@ -66,10 +65,8 @@ def get_date(text_list):
 
 
 def parse_menu(pdf_text):
-    print(pdf_text)
     menu = OrderedDict()
     words = pdf_text.split()
-    print(words)
     menu['date'] = get_date(words)
     read_item = False
     read_description = False
