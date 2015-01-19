@@ -12,6 +12,18 @@ api = twitter.Api(
     )
 
 
+def tweet(content, reply_to_id):
+    pass
+
+
+def tweet_summary(summary):
+    return api.PostUpdate(summary)
+
+
+def tweet_item(item, reply_to_id):
+    pass
+
+
 def tweet_menu(menu):
     menu_items = []
     summary = "Today's Mehfil menu:\n"
@@ -28,7 +40,7 @@ def tweet_menu(menu):
                 item[1]['price']
                 )
             )
-    summary_tweet = api.PostUpdate(summary)
+    summary_tweet = tweet_summary(summary)
     reply_id = summary_tweet.id
     for item in menu_items:
         reply = api.PostUpdate(item, in_reply_to_status_id=reply_id)
