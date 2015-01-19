@@ -1,6 +1,7 @@
 import dateutil.parser as dateutil
 
 from collections import OrderedDict
+import datetime
 import re
 import subprocess
 
@@ -32,31 +33,43 @@ def is_description_end(word):
 def index_of_year(text_list):
     year = re.findall('[0-9]{4}', ' '.join(text_list))[0]
     for i, item in enumerate(text_list):
-        print(year in item)
         if year in item:
             return i
-    # return text_list.index(year)
-
-
-def index_of_month(text_list, year_index):
-    month = re.findall('[A-Z]{3}', ' '.join(text_list[:year_index]))[-1]
-    for i, item in enumerate(text_list):
-        print(month in item)
-        if month in item:
-            return i
-    # return text_list.index(month)
 
 
 def get_date(text_list):
     year_index = index_of_year(text_list)
-    month_index = index_of_month(text_list, year_index)
-    menu_date = ' '.join(text_list[month_index:year_index + 1]).title()
-    return str(dateutil.parse(menu_date).date())
+    date_found = False
+    backtrack = 0
+    # this loop should be re-ordered to catch cases correctly
+    # also, it may either default to 'today', or miss one edge case where
+    #   there are no spaces in the date on the pdf. could catch by manually
+    #   parsing the string at year_index in the event that it found a date
+    #   at exactly that point.
+    while not date_found:
+        date_string = ' '.join(text_list[backtrack:year_index + 1]).title()
+        try:
+            print('try: ', dateutil.parse(date_string))
+            potential_date = dateutil.parse(date_string).date()
+        except ValueError:
+            # raised in some situations when it fails to parse a valid date
+            # We know there is a date here somewhere, so ignore this now.
+            # We will raise another error if we don't find a date.
+            potential_date = None
+        if type(potential_date) == datetime.date:
+            return str(potential_date)
+        elif backtrack < year_index:
+            backtrack += 1
+        else:
+            # need to write and raise a custom error here for logging
+            raise ValueError('No date found ')
 
 
 def parse_menu(pdf_text):
+    print(pdf_text)
     menu = OrderedDict()
     words = pdf_text.split()
+    print(words)
     menu['date'] = get_date(words)
     read_item = False
     read_description = False
