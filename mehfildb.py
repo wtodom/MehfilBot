@@ -2,7 +2,7 @@ import psycopg2
 import yaml
 
 
-config = yaml.load(file('mehfilbot.yaml', 'r'))
+config = yaml.load(open('mehfilbot.yaml', 'r'))
 
 db = config['postgres']['db']
 user = config['postgres']['user']
@@ -30,13 +30,13 @@ def new_menu_item(menu_id, item_number, name, description, price):
     conn = psycopg2.connect(dbname=db, user=user)
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO mehfilbot.menu_item (\
-            menu_id, \
-            item_number, \
-            name, \
-            description, \
-            price)\
-         VALUES ({0}, {1}, '{2}', '{3}', {4});".format(
+        "INSERT INTO mehfilbot.menu_item ("
+            "menu_id, "
+            "item_number, "
+            "name, "
+            "description, "
+            "price) "
+         "VALUES ({0}, {1}, '{2}', '{3}', {4});".format(
             menu_id,
             item_number,
             name,
