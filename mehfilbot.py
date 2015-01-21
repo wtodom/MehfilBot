@@ -9,7 +9,7 @@ import yaml
 import datetime
 
 
-config = yaml.load(file('mehfilbot.yaml', 'r'))
+config = yaml.load(open('mehfilbot.yaml', 'r'))
 
 
 def get_new_pdf():
