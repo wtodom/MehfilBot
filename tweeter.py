@@ -12,16 +12,15 @@ api = twitter.Api(
     )
 
 
-def tweet(content, reply_to_id):
-    pass
-
-
-def tweet_summary(summary):
-    return api.PostUpdate(summary)
-
-
-def tweet_item(item, reply_to_id):
-    pass
+def tweet(content, reply_to_id=None):
+    if len(content) > 140:
+        spaces = [i for i, ch in enumerate(content) if ch in ' \n\t']
+        limit = max(index for index in spaces if index < 140)
+        first_tweet = api.PostUpdate(
+            content[:limit],  in_reply_to_status_id=reply_to_id)
+        tweet(content[limit:], first_tweet.id)
+    else:
+        api.PostUpdate(content,  in_reply_to_status_id=reply_to_id)
 
 
 def tweet_menu(menu):
@@ -40,8 +39,8 @@ def tweet_menu(menu):
                 item[1]['price']
                 )
             )
-    summary_tweet = tweet_summary(summary)
+    summary_tweet = tweet(summary)
     reply_id = summary_tweet.id
     for item in menu_items:
-        reply = api.PostUpdate(item, in_reply_to_status_id=reply_id)
+        reply = tweet(item, reply_to_id=reply_id)
         reply_id = reply.id
