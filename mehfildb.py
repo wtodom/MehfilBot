@@ -2,7 +2,8 @@ import psycopg2
 import yaml
 
 
-config = yaml.load(open('mehfilbot.yaml', 'r'))
+with open('mehfilbot.yaml', 'r') as main_conf:
+    config = yaml.load(main_conf)
 
 db = config['postgres']['db']
 user = config['postgres']['user']
@@ -17,6 +18,8 @@ def new_menu(date):
     cur.execute(
         "INSERT INTO mehfilbot.menu (menu_date) VALUES ('{0}');".format(date))
     res = cur.statusmessage
+    # TODO: Change queries to use INSERT ... RETURNING syntax.
+    # TODO: Return this value to prevent excess db calls.
     conn.commit()
     cur.close()
     conn.close()
@@ -31,12 +34,13 @@ def new_menu_item(menu_id, item_number, name, description, price):
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO mehfilbot.menu_item ("
-            "menu_id, "
-            "item_number, "
-            "name, "
-            "description, "
-            "price) "
-         "VALUES ({0}, {1}, '{2}', '{3}', {4});".format(
+        "menu_id, "
+        "item_number, "
+        "name, "
+        "description, "
+        "price"
+        ") "
+        "VALUES ({0}, {1}, '{2}', '{3}', {4});".format(
             menu_id,
             item_number,
             name,
@@ -58,9 +62,9 @@ def set_menu_as_tweeted(date):
     conn = psycopg2.connect(dbname=db, user=user)
     cur = conn.cursor()
     cur.execute(
-        "UPDATE mehfilbot.menu \
-         SET has_been_tweeted=1 \
-         WHERE menu_date='{0}' and has_been_tweeted=0;".format(date))
+        "UPDATE mehfilbot.menu "
+        "SET has_been_tweeted=1 "
+        "WHERE menu_date='{0}' and has_been_tweeted=0;".format(date))
     res = cur.statusmessage
     conn.commit()
     cur.close()
