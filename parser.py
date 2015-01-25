@@ -1,9 +1,20 @@
 import dateutil.parser as dateutil
+import yaml
 
 from collections import OrderedDict
 import datetime
+import logging.config
 import re
 import subprocess
+
+
+with open('logging.yaml', 'r') as f:
+    log_conf = yaml.load(f)
+
+
+logger = logging.getLogger(__name__)
+
+logging.config.dictConfig(log_conf)
 
 
 def get_text(pdf_filename):
@@ -38,6 +49,7 @@ def index_of_year(text_list):
 
 
 def get_date(text_list):
+    logger.info('Getting date for menu.')
     year_index = index_of_year(text_list)
     date_found = False
     backtrack = 0
@@ -56,15 +68,19 @@ def get_date(text_list):
             # We will raise another error if we don't find a date.
             potential_date = None
         if type(potential_date) == datetime.date:
-            return str(potential_date)
+            date = str(potential_date)
+            logger.info('Found date - {0}'.format(date))
+            return date
         elif backtrack < year_index:
             backtrack += 1
         else:
             # need to write and raise a custom error here for logging
-            raise ValueError('No date found ')
+            logger.error('Failed to find a valid date.')
+            raise ValueError('No date found.')
 
 
 def parse_menu(pdf_text):
+    logger.info('Beginning to parse menu.')
     menu = OrderedDict()
     words = pdf_text.split()
     menu['date'] = get_date(words)
@@ -99,4 +115,5 @@ def parse_menu(pdf_text):
                 read_description = False
         elif len(menu.keys()) == 6:  # TODO: this is a bad way to check
             break
+    logger.info('Finished parsing menu.')
     return menu

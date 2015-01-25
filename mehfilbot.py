@@ -18,24 +18,26 @@ with open('logging.yaml', 'r') as f:
     log_conf = yaml.load(f)
 
 
+logger = logging.getLogger(__name__)
+
 logging.config.dictConfig(log_conf)
 
 
 def get_new_pdf():
-    logging.info('Getting new menu pdf.')
+    logger.info('Getting new menu pdf.')
     response = requests.get(config['menu']['url'], stream=True)
     with open(config['menu']['filename'], 'w') as pdf:
         shutil.copyfileobj(response.raw, pdf)
 
 
 def is_new(menu):
-    logging.info('Checking if menu for {0} is new.'.format(menu['date']))
+    logger.info('Checking if menu for {0} is new.'.format(menu['date']))
     res = mehfildb.get_menu_for_date(menu['date'])
     return res is None
 
 
 def log_menu(menu):
-    logging.info('Recording menu for {0} in db.'.format(menu['date']))
+    logger.info('Recording menu for {0} in db.'.format(menu['date']))
     mehfildb.new_menu(menu['date'])
     menu_id = mehfildb.get_menu_for_date(menu['date'])[0]
     for i in range(1, 6):
@@ -60,6 +62,6 @@ def main():
         mehfildb.set_menu_as_tweeted(today)
 
 if __name__ == '__main__':
-    logging.info('Starting mehfilbot.')
+    logger.info('Starting mehfilbot.')
     main()
-    logging.info('Stopping mehfilbot.')
+    logger.info('Stopping mehfilbot.')
