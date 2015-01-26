@@ -30,11 +30,11 @@ def tweet(content, reply_to_id=None):
         limit = max(index for index in spaces if index < 140)
         logger.info('Sending partial tweet: {0}'.format(content[:limit]))
         first_tweet = api.PostUpdate(
-            content[:limit],  in_reply_to_status_id=reply_to_id)
-        tweet(content[limit:], first_tweet.id)
+            content[:limit], in_reply_to_status_id=reply_to_id)
+        return tweet(content[limit:], first_tweet.id)
     else:
         logger.info('Sending final tweet: {0}'.format(content))
-        api.PostUpdate(content,  in_reply_to_status_id=reply_to_id)
+        return api.PostUpdate(content, in_reply_to_status_id=reply_to_id)
 
 
 def tweet_menu(menu):
@@ -48,7 +48,7 @@ def tweet_menu(menu):
             )
         menu_items.append(
             "{0}: {1} - {2} (${3})".format(
-                item[0],
+                item[0],  # item_number
                 item[1]['name'],
                 item[1]['description'],
                 item[1]['price']
@@ -61,3 +61,7 @@ def tweet_menu(menu):
         logger.info('Tweeting menu item {0}.'.format(item[0]))
         reply = tweet(item, reply_to_id=reply_id)
         reply_id = reply.id
+
+
+def get_replies():
+    pass
