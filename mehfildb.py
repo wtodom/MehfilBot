@@ -150,3 +150,4 @@ def menu_exists(date):
         logger.info('Menu exists.')
     else:
         logger.info('Menu does not exist.')
+    return res
