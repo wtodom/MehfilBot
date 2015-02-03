@@ -1,6 +1,7 @@
 import twitter
 import yaml
 
+import time
 import logging.config
 
 
@@ -25,6 +26,7 @@ api = twitter.Api(
 
 
 def tweet(content, reply_to_id=None):
+    time.sleep(1)
     if len(content) > 140:
         spaces = [i for i, ch in enumerate(content) if ch in ' \n\t']
         limit = max(index for index in spaces if index < 140)
