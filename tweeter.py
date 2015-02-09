@@ -33,7 +33,8 @@ def tweet(content, reply_to_id=None):
         logger.info('Sending partial tweet: {0}'.format(content[:limit]))
         first_tweet = api.PostUpdate(
             content[:limit], in_reply_to_status_id=reply_to_id)
-        return tweet(content[limit:], first_tweet.id)
+        remaining = '(cont.) ' + content[limit:]
+        return tweet(remaining, first_tweet.id)
     else:
         logger.info('Sending final tweet: {0}'.format(content))
         return api.PostUpdate(content, in_reply_to_status_id=reply_to_id)
